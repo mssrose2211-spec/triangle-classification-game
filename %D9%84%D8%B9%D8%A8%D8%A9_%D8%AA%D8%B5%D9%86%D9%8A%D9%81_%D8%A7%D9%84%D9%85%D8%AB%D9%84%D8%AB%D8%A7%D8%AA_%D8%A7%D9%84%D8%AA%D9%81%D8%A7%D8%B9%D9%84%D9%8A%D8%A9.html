@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#6d4aff">
+<title>مغامرة تصنيف المثلثات</title>
+<style>
+:root{
+  --ink:#25224a;--muted:#716d91;--purple:#6d4aff;--purple2:#8f7bff;
+  --pink:#ff6fae;--mint:#24c7a4;--gold:#ffc857;--paper:#fff;
+  --line:#e9e5ff;--good:#168b65;--bad:#d64d66;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;min-height:100vh;font-family:Tahoma,Arial,sans-serif;color:var(--ink);
+ background:
+ radial-gradient(circle at 8% 12%,#ffe5f2 0,transparent 23%),
+ radial-gradient(circle at 92% 20%,#e5eaff 0,transparent 26%),
+ linear-gradient(145deg,#faf8ff,#f1fbff 60%,#fff9f0);
+ overflow-x:hidden}
+button{font:inherit;cursor:pointer}
+.page{max-width:1200px;margin:auto;padding:16px clamp(12px,3vw,30px) 32px}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:900;color:var(--purple)}
+.brand-icon{width:42px;height:42px;display:grid;place-items:center;border-radius:14px;background:#fff;box-shadow:0 8px 24px #5943a51c;font-size:24px}
+.pill{background:#fff;border:1px solid var(--line);padding:9px 13px;border-radius:999px;color:var(--muted);font-size:13px;font-weight:700}
+.hero{text-align:center;padding:20px 10px 22px;position:relative}
+.eyebrow{display:inline-flex;align-items:center;gap:7px;padding:7px 13px;border-radius:999px;background:#eee9ff;color:#6244e6;font-size:13px;font-weight:800}
+h1{font-size:clamp(30px,5vw,54px);line-height:1.2;margin:14px 0 10px;letter-spacing:-1px}
+h1 .accent{background:linear-gradient(90deg,#6d4aff,#ff5eaa);-webkit-background-clip:text;background-clip:text;color:transparent}
+.subtitle{margin:0 auto;color:var(--muted);font-size:clamp(15px,2vw,18px);line-height:1.8;max-width:650px}
+.stats{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:18px auto 0}
+.stat{min-width:115px;display:flex;align-items:center;gap:10px;padding:10px 15px;border:1px solid #fff;background:#ffffffd9;border-radius:17px;box-shadow:0 7px 22px #40338a0b}
+.stat-icon{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:#f0ebff;font-size:20px}
+.stat:nth-child(2) .stat-icon{background:#fff3cf}.stat:nth-child(3) .stat-icon{background:#dffaf2}
+.stat-label{font-size:11px;color:var(--muted);font-weight:700}.stat-value{font-size:20px;font-weight:900;margin-top:2px}
+.progress-wrap{max-width:520px;margin:17px auto 0;text-align:right}
+.progress-meta{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);font-weight:700;margin-bottom:7px}
+.progress{height:9px;background:#e7e3fa;border-radius:99px;overflow:hidden}
+.progress-bar{height:100%;width:0;background:linear-gradient(90deg,var(--purple),var(--pink));border-radius:99px;transition:width .45s ease}
+.game-grid{display:grid;grid-template-columns:minmax(245px,.78fr) minmax(0,1.22fr);gap:18px;align-items:start;margin-top:20px}
+.panel{background:#ffffffdb;border:1px solid #fff;border-radius:24px;padding:clamp(14px,2vw,22px);box-shadow:0 14px 40px #51409b0d;backdrop-filter:blur(10px)}
+.panel-heading{display:flex;align-items:center;gap:10px;margin:0 0 7px;font-size:21px}
+.heading-icon{width:40px;height:40px;border-radius:13px;display:grid;place-items:center;background:#eee9ff;font-size:21px}
+.panel-desc{color:var(--muted);font-size:13px;line-height:1.7;margin:0 0 17px}
+.labels{display:grid;grid-template-columns:1fr;gap:10px}
+.label{position:relative;display:flex;align-items:center;gap:11px;min-height:63px;padding:11px 12px;border:2px solid #e9e4ff;border-radius:17px;background:linear-gradient(135deg,#fff,#faf8ff);color:#383061;font-weight:800;font-size:15px;line-height:1.5;cursor:grab;user-select:none;touch-action:pan-y;transition:transform .2s,border-color .2s,box-shadow .2s,opacity .2s}
+.label:hover{transform:translateY(-2px);border-color:#b9aaff;box-shadow:0 7px 17px #6d4aff12}
+.label:active{cursor:grabbing}
+.label.selected{border-color:var(--gold);background:#fff8df;box-shadow:0 0 0 3px #ffc85732}
+.label.used{opacity:.52}
+.label.used .label-check{display:grid}
+.label-symbol{width:37px;height:37px;flex:0 0 37px;display:grid;place-items:center;border-radius:12px;background:#f0ecff;color:var(--purple);font-size:19px}
+.label-text{flex:1}
+.label-check{display:none;width:23px;height:23px;border-radius:50%;background:#d9f8ed;color:#087957;place-items:center;font-size:14px}
+.targets{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.target{position:relative;min-height:178px;border:2px dashed #d8d1f8;border-radius:19px;background:linear-gradient(150deg,#fff,#fbfaff);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:13px 9px;transition:transform .2s,border-color .2s,background .2s,box-shadow .2s;overflow:hidden}
+.target.over,.target:focus-visible{border-color:var(--purple2);background:#f4f0ff;box-shadow:0 0 0 4px #8f7bff20}
+.target.correct{border-style:solid;border-color:#56d5ad;background:linear-gradient(150deg,#f2fff9,#e7fbf4);animation:pop .42s ease}
+.target.wrong{border-style:solid;border-color:#ff9aac;background:#fff5f7;animation:shake .35s ease}
+.target svg{width:100%;max-width:180px;height:91px;overflow:visible;filter:drop-shadow(0 4px 3px #5e55a111)}
+.target svg path{stroke:#654cf0;stroke-linecap:round;stroke-linejoin:round}
+.target .droptext{font-size:12px;color:#9a94ba;font-weight:700;text-align:center}
+.answer{font-weight:900;text-align:center;min-height:22px;color:#5140b9;font-size:13px;line-height:1.5}
+.target.correct .answer{color:var(--good)}
+.target.wrong .answer{color:var(--bad)}
+.target-badge{position:absolute;top:9px;right:9px;width:27px;height:27px;border-radius:9px;background:#f0edff;color:#7867c7;display:grid;place-items:center;font-size:12px;font-weight:900}
+.target-status{position:absolute;top:8px;left:9px;font-size:20px;opacity:0;transform:scale(.5);transition:.2s}
+.target.correct .target-status,.target.wrong .target-status{opacity:1;transform:scale(1)}
+.feedback{min-height:55px;display:flex;align-items:center;justify-content:center;gap:8px;text-align:center;margin:15px 0 0;padding:12px 15px;border-radius:16px;background:#f3f0ff;color:#5b49bb;font-size:14px;font-weight:800;line-height:1.7}
+.feedback.good{background:#e7fbf3;color:#087957}.feedback.bad{background:#fff0f3;color:#b83753}
+.actions{display:flex;justify-content:center;align-items:center;gap:10px;flex-wrap:wrap;margin:18px 0 0}
+.btn{border:0;border-radius:15px;padding:13px 20px;font-weight:900;display:inline-flex;align-items:center;justify-content:center;gap:9px;transition:transform .18s,box-shadow .18s;min-height:48px}
+.btn:hover{transform:translateY(-2px)}
+.btn-primary{color:#fff;background:linear-gradient(100deg,#6d4aff,#8c68ff);box-shadow:0 7px 0 #4e35bf,0 12px 22px #6d4aff20}
+.btn-secondary{color:#5c4bb0;background:#fff;border:1px solid #e3ddff;box-shadow:0 4px 0 #e7e1ff}
+.btn:active{transform:translateY(2px);box-shadow:none}
+.tip{text-align:center;font-size:12px;color:#8a84a7;line-height:1.8;margin:15px 0 0}
+footer{text-align:center;color:#9892b1;font-size:12px;padding:22px 10px 0}
+.confetti-layer{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:20}
+.confetti{position:absolute;top:-35px;font-size:25px;animation:fall var(--dur,2.2s) linear forwards;left:var(--x)}
+.floating-star{position:absolute;pointer-events:none;font-size:25px;animation:starburst .9s ease-out forwards;z-index:5}
+.modal{position:fixed;inset:0;background:#20164688;display:none;place-items:center;padding:20px;z-index:30}
+.modal.show{display:grid;animation:fade .25s ease}
+.modal-card{width:min(440px,100%);text-align:center;padding:30px 22px;background:#fff;border-radius:28px;box-shadow:0 25px 80px #1e123d40;animation:pop .4s ease}
+.modal-trophy{font-size:65px;animation:bob 1.5s ease-in-out infinite}
+.modal-card h2{font-size:29px;margin:8px 0;color:#5d45d6}
+.modal-card p{color:var(--muted);line-height:1.8}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg);opacity:.1}}
+@keyframes starburst{0%{opacity:0;transform:translate(0,0) scale(.2)}25%{opacity:1}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(1.5)}}
+@keyframes pop{0%{transform:scale(.94)}60%{transform:scale(1.025)}100%{transform:scale(1)}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+@media(min-width:850px){.labels{grid-template-columns:1fr 1fr}.label{min-height:78px;font-size:14px}.target{min-height:190px}}
+@media(max-width:720px){.page{padding:10px 12px 25px}.topbar{margin-bottom:2px}.hero{padding-top:15px}.game-grid{grid-template-columns:1fr}.game-grid .panel:first-child{order:1}.game-grid .panel:last-child{order:2}.labels{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.label{min-height:76px;padding:9px 8px;gap:7px;font-size:12px;flex-direction:column;text-align:center}.label-symbol{width:30px;height:30px;flex-basis:30px;font-size:16px}.label-check{position:absolute;top:5px;left:5px}.target{min-height:160px}.panel{border-radius:21px}.stats{gap:7px}.stat{min-width:95px;padding:8px 10px}.stat-icon{width:32px;height:32px;font-size:17px}.stat-value{font-size:18px}}
+@media(max-width:370px){.targets{gap:8px}.target{min-height:145px;padding:10px 5px}.target svg{height:78px}.pill{font-size:11px;padding:8px 9px}.labels{grid-template-columns:1fr 1fr}.label{font-size:11px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<div class="confetti-layer" id="confettiLayer" aria-hidden="true"></div>
+<div class="page">
+  <div class="topbar">
+    <div class="brand"><div class="brand-icon">📐</div><span>مختبر الرياضيات</span></div>
+    <div class="pill">🎮 لعبة تعليمية تفاعلية</div>
+  </div>
+
+  <header class="hero">
+    <div class="eyebrow">⭐ تحدّي الأذكياء</div>
+    <h1>مغامرة <span class="accent">تصنيف المثلثات</span></h1>
+    <p class="subtitle">هل أنتِ مستعدة للتحدّي؟ طابقي كل مثلث مع تصنيفه الصحيح، واجمعي النجوم لتصبحي بطلة الهندسة!</p>
+    <div class="stats">
+      <div class="stat"><div class="stat-icon">⭐</div><div><div class="stat-label">النقاط</div><div class="stat-value" id="score">٠</div></div></div>
+      <div class="stat"><div class="stat-icon">🎯</div><div><div class="stat-label">الإجابات الصحيحة</div><div class="stat-value" id="correctCount">٠ / ٦</div></div></div>
+      <div class="stat"><div class="stat-icon">🏆</div><div><div class="stat-label">النجوم</div><div class="stat-value" id="stars">☆☆☆</div></div></div>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-meta"><span>تقدّمك في التحدّي</span><span id="progressText">٠٪</span></div>
+      <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+    </div>
+  </header>
+
+  <main class="game-grid">
+    <section class="panel">
+      <h2 class="panel-heading"><span class="heading-icon">🧩</span> بطاقات التصنيف</h2>
+      <p class="panel-desc">اسحبي البطاقة إلى الرسم المناسب، أو اضغطي على البطاقة ثم على المثلث.</p>
+      <div class="labels" id="labels">
+        <div class="label" draggable="true" data-id="equilateral" tabindex="0"><span class="label-symbol">△</span><span class="label-text">مثلث متساوي الأضلاع</span><span class="label-check">✓</span></div>
+        <div class="label" draggable="true" data-id="isosceles" tabindex="0"><span class="label-symbol">△</span><span class="label-text">مثلث متساوي الساقين</span><span class="label-check">✓</span></div>
+        <div class="label" draggable="true" data-id="scalene" tabindex="0"><span class="label-symbol">△</span><span class="label-text">مثلث مختلف الأضلاع</span><span class="label-check">✓</span></div>
+        <div class="label" draggable="true" data-id="acute" tabindex="0"><span class="label-symbol">△</span><span class="label-text">مثلث حاد الزوايا</span><span class="label-check">✓</span></div>
+        <div class="label" draggable="true" data-id="right" tabindex="0"><span class="label-symbol">◿</span><span class="label-text">مثلث قائم الزاوية</span><span class="label-check">✓</span></div>
+        <div class="label" draggable="true" data-id="obtuse" tabindex="0"><span class="label-symbol">△</span><span class="label-text">مثلث منفرج الزاوية</span><span class="label-check">✓</span></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2 class="panel-heading"><span class="heading-icon">📐</span> اختاري الرسم الصحيح</h2>
+      <p class="panel-desc">ضعي التصنيف في مكانه. يمكنك تغيير إجابتك في أي وقت.</p>
+      <div class="targets" id="targets">
+        <div class="target" data-answer="equilateral" tabindex="0" role="button" aria-label="رسم المثلث الأول">
+          <span class="target-badge">١</span><span class="target-status">⭐</span>
+          <svg viewBox="0 0 180 100" aria-hidden="true"><path d="M90 12 L24 88 L156 88 Z" fill="#f2efff" stroke-width="3.5"/><path d="M55 48 l10 5 M115 53 l10 -5 M84 88 l0 -9" fill="none" stroke-width="3"/></svg>
+          <div class="droptext">ضعي التصنيف هنا</div><div class="answer"></div>
+        </div>
+        <div class="target" data-answer="isosceles" tabindex="0" role="button" aria-label="رسم المثلث الثاني">
+          <span class="target-badge">٢</span><span class="target-status">⭐</span>
+          <svg viewBox="0 0 180 100" aria-hidden="true"><path d="M90 12 L30 88 L150 88 Z" fill="#f2efff" stroke-width="3.5"/><path d="M53 53 l10 5 M117 58 l10 -5" fill="none" stroke-width="3"/></svg>
+          <div class="droptext">ضعي التصنيف هنا</div><div class="answer"></div>
+        </div>
+        <div class="target" data-answer="scalene" tabindex="0" role="button" aria-label="رسم المثلث الثالث">
+          <span class="target-badge">٣</span><span class="target-status">⭐</span>
+          <svg viewBox="0 0 180 100" aria-hidden="true"><path d="M38 20 L12 85 L166 85 Z" fill="#f2efff" stroke-width="3.5"/></svg>
+          <div class="droptext">ضعي التصنيف هنا</div><div class="answer"></div>
+        </div>
+        <div class="target" data-answer="acute" tabindex="0" role="button" aria-label="رسم المثلث الرابع">
+          <span class="target-badge">٤</span><span class="target-status">⭐</span>
+          <svg viewBox="0 0 180 100" aria-hidden="true"><path d="M90 10 L25 88 L155 88 Z" fill="#f2efff" stroke-width="3.5"/><path d="M83 24 Q90 32 97 24 M36 78 Q39 69 47 72 M133 72 Q141 69 144 78" fill="none" stroke-width="2.5"/></svg>
+          <div class="droptext">ضعي التصنيف هنا</div><div class="answer"></div>
+        </div>
+        <div class="target" data-answer="right" tabindex="0" role="button" aria-label="رسم المثلث الخامس">
+          <span class="target-badge">٥</span><span class="target-status">⭐</span>
+          <svg viewBox="0 0 180 100" aria-hidden="true"><path d="M35 10 L35 88 L155 88 Z" fill="#f2efff" stroke-width="3.5"/><path d="M35 74 L49 74 L49 88" fill="none" stroke-width="3"/></svg>
+          <div class="droptext">ضعي التصنيف هنا</div><div class="answer"></div>
+        </div>
+        <div class="target" data-answer="obtuse" tabindex="0" role="button" aria-label="رسم المثلث السادس">
+          <span class="target-badge">٦</span><span class="target-status">⭐</span>
+          <svg viewBox="0 0 180 100" aria-hidden="true"><path d="M20 18 L63 82 L168 85 Z" fill="#f2efff" stroke-width="3.5"/><path d="M52 65 Q62 58 72 73" fill="none" stroke-width="2.5"/></svg>
+          <div class="droptext">ضعي التصنيف هنا</div><div class="answer"></div>
+        </div>
+      </div>
+      <div class="feedback" id="feedback" role="status" aria-live="polite">✨ اختاري بطاقة وابدئي المغامرة!</div>
+      <div class="actions">
+        <button class="btn btn-primary" id="check">تحقّقي من النتيجة <span>→</span></button>
+        <button class="btn btn-secondary" id="reset">↻ إعادة اللعب</button>
+      </div>
+      <p class="tip">💡 تلميح: يمكنك نقل البطاقة من مكان إلى آخر إذا أردتِ تغيير إجابتك.</p>
+    </section>
+  </main>
+  <footer>صُممت بحبّ لتعلّم الرياضيات بطريقة ممتعة ✨</footer>
+</div>
+
+<div class="modal" id="winModal" role="dialog" aria-modal="true" aria-labelledby="winTitle">
+  <div class="modal-card">
+    <div class="modal-trophy">🏆</div>
+    <h2 id="winTitle">أبدعتِ يا بطلة!</h2>
+    <p id="winMessage">لقد صنّفتِ جميع المثلثات بشكل صحيح.</p>
+    <button class="btn btn-primary" id="playAgain">العبِي من جديد ✨</button>
+  </div>
+</div>
+
+<script>
+(() => {
+  const labels = [...document.querySelectorAll('.label')];
+  const targets = [...document.querySelectorAll('.target')];
+  const scoreEl = document.getElementById('score');
+  const correctEl = document.getElementById('correctCount');
+  const starsEl = document.getElementById('stars');
+  const progressBar = document.getElementById('progressBar');
+  const progressText = document.getElementById('progressText');
+  const feedback = document.getElementById('feedback');
+  const confettiLayer = document.getElementById('confettiLayer');
+  const winModal = document.getElementById('winModal');
+  const names = Object.fromEntries(labels.map(l => [l.dataset.id, l.querySelector('.label-text').textContent.trim()]));
+  let placements = {};
+  let selected = null;
+  let dragState = null;
+  let finished = false;
+
+  const arabicNum = n => String(n).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[Number(d)]);
+  const correctTotal = () => targets.filter(t => placements[t.dataset.answer] === t.dataset.answer).length;
+  const placedTotal = () => Object.keys(placements).length;
+
+  function setFeedback(message, kind='') {
+    feedback.textContent = message;
+    feedback.className = 'feedback' + (kind ? ' ' + kind : '');
+  }
+  function updateStats() {
+    const correct = correctTotal();
+    scoreEl.textContent = arabicNum(correct * 10);
+    correctEl.textContent = `${arabicNum(correct)} / ٦`;
+    starsEl.textContent = '★'.repeat(Math.floor(correct / 2)) + '☆'.repeat(3 - Math.floor(correct / 2));
+    progressBar.style.width = `${correct / 6 * 100}%`;
+    progressText.textContent = `${arabicNum(Math.round(correct / 6 * 100))}٪`;
+  }
+  function render() {
+    labels.forEach(label => {
+      const used = Object.values(placements).includes(label.dataset.id);
+      label.classList.toggle('used', used);
+      label.classList.toggle('selected', selected === label.dataset.id);
+      label.setAttribute('aria-pressed', selected === label.dataset.id ? 'true' : 'false');
+    });
+    targets.forEach(t => {
+      const id = placements[t.dataset.answer];
+      t.querySelector('.answer').textContent = id ? names[id] : '';
+      t.querySelector('.droptext').style.display = id ? 'none' : 'block';
+      t.classList.remove('correct', 'wrong');
+      t.querySelector('.target-status').textContent = '⭐';
+      if (id) {
+        if (id === t.dataset.answer) t.classList.add('correct');
+        else { t.classList.add('wrong'); t.querySelector('.target-status').textContent = '↻'; }
+      }
+    });
+    updateStats();
+  }
+  function place(id, target) {
+    if (!id || !target || finished) return;
+    const wasCorrect = placements[target.dataset.answer] === target.dataset.answer;
+    Object.keys(placements).forEach(key => { if (placements[key] === id) delete placements[key]; });
+    placements[target.dataset.answer] = id;
+    selected = null;
+    render();
+    if (id === target.dataset.answer) {
+      setFeedback('أحسنتِ! إجابة صحيحة، حصلتِ على ١٠ نقاط ⭐', 'good');
+      burstAt(target);
+      if (!wasCorrect) tinyConfetti(16);
+    } else {
+      setFeedback('قريبة من الإجابة! جرّبي تصنيفًا آخر 💪', 'bad');
+    }
+    if (correctTotal() === 6) celebrateWin();
+  }
+  function burstAt(el) {
+    const rect = el.getBoundingClientRect();
+    for (let i = 0; i < 7; i++) {
+      const star = document.createElement('span');
+      star.className = 'floating-star';
+      star.textContent = ['✨','⭐','🌟'][i % 3];
+      star.style.left = `${rect.left + rect.width * (.25 + Math.random() * .5)}px`;
+      star.style.top = `${rect.top + rect.height * (.25 + Math.random() * .4)}px`;
+      star.style.setProperty('--dx', `${(Math.random() - .5) * 130}px`);
+      star.style.setProperty('--dy', `${-35 - Math.random() * 90}px`);
+      document.body.appendChild(star);
+      setTimeout(() => star.remove(), 1000);
+    }
+  }
+  function tinyConfetti(count=36) {
+    const bits = ['🎉','✨','⭐','💜','🌟','🎊'];
+    for (let i = 0; i < count; i++) {
+      const bit = document.createElement('span');
+      bit.className = 'confetti';
+      bit.textContent = bits[Math.floor(Math.random() * bits.length)];
+      bit.style.setProperty('--x', `${Math.random() * 100}%`);
+      bit.style.setProperty('--dur', `${1.6 + Math.random() * 1.8}s`);
+      bit.style.animationDelay = `${Math.random() * .35}s`;
+      confettiLayer.appendChild(bit);
+      setTimeout(() => bit.remove(), 4000);
+    }
+  }
+  function celebrateWin() {
+    if (finished) return;
+    finished = true;
+    setFeedback('🎉 مذهل! جميع الإجابات صحيحة. أنتِ بطلة المثلثات!', 'good');
+    tinyConfetti(70);
+    setTimeout(() => {
+      document.getElementById('winMessage').textContent = `جمعتِ ${arabicNum(60)} نقطة وأكملتِ التحدّي بنجاح. استمري في التألّق!`;
+      winModal.classList.add('show');
+      document.getElementById('playAgain').focus();
+    }, 550);
+  }
+
+  labels.forEach(label => {
+    label.addEventListener('click', () => {
+      if (finished) return;
+      selected = selected === label.dataset.id ? null : label.dataset.id;
+      render();
+      if (selected) setFeedback('اختيار رائع! اضغطي على المثلث الذي يناسب هذا التصنيف.');
+    });
+    label.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        selected = label.dataset.id; render();
+        setFeedback('تم اختيار البطاقة. انتقلي إلى الرسم واضغطي عليه.');
+      }
+    });
+    label.addEventListener('dragstart', e => {
+      if (finished) { e.preventDefault(); return; }
+      e.dataTransfer.setData('text/plain', label.dataset.id);
+      e.dataTransfer.effectAllowed = 'move';
+      selected = label.dataset.id;
+    });
+    label.addEventListener('pointerdown', e => {
+      if (finished || e.pointerType === 'mouse') return;
+      dragState = { id: label.dataset.id, startX: e.clientX, startY: e.clientY, moved: false, source: label, ghost: null };
+    });
+  });
+  targets.forEach(target => {
+    target.addEventListener('click', () => {
+      if (selected && !finished) place(selected, target);
+    });
+    target.addEventListener('keydown', e => {
+      if ((e.key === 'Enter' || e.key === ' ') && selected && !finished) {
+        e.preventDefault(); place(selected, target);
+      }
+    });
+    target.addEventListener('dragover', e => { e.preventDefault(); target.classList.add('over'); });
+    target.addEventListener('dragleave', () => target.classList.remove('over'));
+    target.addEventListener('drop', e => {
+      e.preventDefault(); target.classList.remove('over');
+      const id = e.dataTransfer.getData('text/plain');
+      if (id) place(id, target);
+    });
+  });
+
+  document.addEventListener('pointermove', e => {
+    if (!dragState || e.pointerType === 'mouse') return;
+    if (Math.hypot(e.clientX - dragState.startX, e.clientY - dragState.startY) > 8) {
+      dragState.moved = true;
+      if (!dragState.ghost) {
+        const ghost = dragState.source.cloneNode(true);
+        ghost.style.position = 'fixed'; ghost.style.zIndex = '1000'; ghost.style.pointerEvents = 'none';
+        ghost.style.width = `${Math.min(dragState.source.getBoundingClientRect().width, 230)}px`;
+        ghost.style.opacity = '.92'; ghost.style.boxShadow = '0 12px 30px #35217c35';
+        document.body.appendChild(ghost); dragState.ghost = ghost;
+      }
+      dragState.ghost.style.left = `${e.clientX - dragState.ghost.offsetWidth / 2}px`;
+      dragState.ghost.style.top = `${e.clientY - dragState.ghost.offsetHeight / 2}px`;
+      targets.forEach(t => t.classList.toggle('over', t.contains(document.elementFromPoint(e.clientX, e.clientY))));
+    }
+  }, {passive:true});
+  document.addEventListener('pointerup', e => {
+    if (!dragState || e.pointerType === 'mouse') return;
+    const state = dragState;
+    if (state.ghost) state.ghost.remove();
+    targets.forEach(t => t.classList.remove('over'));
+    if (state.moved) {
+      const el = document.elementFromPoint(e.clientX, e.clientY);
+      const target = el && el.closest ? el.closest('.target') : null;
+      if (target) place(state.id, target);
+      else setFeedback('أفلتي البطاقة فوق أحد الرسوم، أو اضغطي على البطاقة ثم الرسم.');
+    }
+    dragState = null;
+  }, {passive:true});
+  document.addEventListener('pointercancel', () => {
+    if (dragState && dragState.ghost) dragState.ghost.remove();
+    dragState = null; targets.forEach(t => t.classList.remove('over'));
+  });
+
+  document.getElementById('check').addEventListener('click', () => {
+    const correct = correctTotal();
+    const total = placedTotal();
+    if (correct === 6) { celebrateWin(); return; }
+    if (total === 0) {
+      setFeedback('ابدئي أولًا باختيار بطاقة ووضعها عند الرسم المناسب.', 'bad');
+      return;
+    }
+    setFeedback(`نتيجتك الحالية ${arabicNum(correct)} من ٦. راجعي البطاقات التي عليها علامة ↻ ثم حاولي مرة أخرى.`, correct ? 'good' : 'bad');
+    targets.forEach(t => {
+      if (placements[t.dataset.answer] === t.dataset.answer) burstAt(t);
+    });
+  });
+  function resetGame() {
+    placements = {}; selected = null; finished = false;
+    winModal.classList.remove('show');
+    confettiLayer.innerHTML = '';
+    setFeedback('✨ اختاري بطاقة وابدئي المغامرة!');
+    render();
+  }
+  document.getElementById('reset').addEventListener('click', resetGame);
+  document.getElementById('playAgain').addEventListener('click', resetGame);
+  winModal.addEventListener('click', e => { if (e.target === winModal) resetGame(); });
+  render();
+})();
+</script>
+</body>
+</html>
